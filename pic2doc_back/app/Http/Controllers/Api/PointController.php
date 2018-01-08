@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Project;
+use App\Point;
 use Illuminate\Support\Facades\Response;
 
-class ProjectController extends Controller
+class PointController extends Controller
 {
     //
     /**
@@ -19,8 +19,10 @@ class ProjectController extends Controller
     protected function create(Request $request)
     {
 
-        Project::create([
-            'title' => $request->input('title'),
+        Point::create([
+            'point_x' => $request->input('point_x'),
+            'point_y' => $request->input('point_y'),
+            'page_id' => $request->input('page_id'),
             'create_time' => time(),
         ]);
         return Response::format("200");
@@ -33,7 +35,8 @@ class ProjectController extends Controller
      */
     protected function lists(Request $request)
     {
-        return Response::format("200", Project::get());
+        $lists = Point::where('page_id', $request->input('page_id'))->get();
+        return Response::format("200", $lists);
     }
     /**
      * update one item
@@ -43,8 +46,13 @@ class ProjectController extends Controller
      */
     protected function update(Request $request)
     {
-        Project::where('id', $request->input('id'))
-            ->update(['title' => $request->input('title')]);
+        $upItemName ='title';
+        if ($request->input('pic'))
+        {
+            $upItemName ='pic';
+        }
+        Point::where('id', $request->input('id'))
+            ->update([$upItemName => $request->input($upItemName)]);
 
         return Response::format("200");
     }
@@ -56,9 +64,23 @@ class ProjectController extends Controller
      */
     protected function delete(Request $request)
     {
-        Project::where('id', $request->input('id'))
+        Point::where('id', $request->input('id'))
             ->delete();
 
         return Response::format("200");
+    }
+    /**
+     * detail
+     *
+     * @param  array  $data
+     * @return \App\User
+     */
+    protected function detail(Request $request)
+    {
+
+        $info = Point::where('id', $request->input('id'))
+            ->first();
+        $info['pic'] = $info['pic'] ? env('APP_URL') . $info['pic'] : '';
+        return Response::format("200", ['info' => $info]);
     }
 }

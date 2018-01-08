@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Project;
+use App\Page;
 use Illuminate\Support\Facades\Response;
 
-class ProjectController extends Controller
+class PageController extends Controller
 {
     //
     /**
@@ -19,7 +19,7 @@ class ProjectController extends Controller
     protected function create(Request $request)
     {
 
-        Project::create([
+        Page::create([
             'title' => $request->input('title'),
             'create_time' => time(),
         ]);
@@ -33,7 +33,15 @@ class ProjectController extends Controller
      */
     protected function lists(Request $request)
     {
-        return Response::format("200", Project::get());
+        $lists = Page::get();
+        foreach ($lists as &$item) {
+            if ($item['pic'])
+            {
+                $item['pic'] = env('APP_URL') . $item['pic'];
+            }
+        }
+
+        return Response::format("200", $lists);
     }
     /**
      * update one item
@@ -43,8 +51,13 @@ class ProjectController extends Controller
      */
     protected function update(Request $request)
     {
-        Project::where('id', $request->input('id'))
-            ->update(['title' => $request->input('title')]);
+        $upItemName ='title';
+        if ($request->input('pic'))
+        {
+            $upItemName ='pic';
+        }
+        Page::where('id', $request->input('id'))
+            ->update([$upItemName => $request->input($upItemName)]);
 
         return Response::format("200");
     }
@@ -56,9 +69,23 @@ class ProjectController extends Controller
      */
     protected function delete(Request $request)
     {
-        Project::where('id', $request->input('id'))
+        Page::where('id', $request->input('id'))
             ->delete();
 
         return Response::format("200");
+    }
+    /**
+     * Create a new user instance after a valid registration.
+     *
+     * @param  array  $data
+     * @return \App\User
+     */
+    protected function detail(Request $request)
+    {
+
+        $info = Page::where('id', $request->input('id'))
+            ->first();
+        $info['pic'] = $info['pic'] ? env('APP_URL') . $info['pic'] : '';
+        return Response::format("200", ['info' => $info]);
     }
 }
